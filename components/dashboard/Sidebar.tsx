@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { useToast } from '@/components/ui/Toast';
+import { authClient } from '@/lib/auth/client';
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -28,7 +29,7 @@ export function Sidebar({ isOpen, onClose, userEmail }: SidebarProps) {
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/auth/login', { method: 'DELETE' });
+      await authClient.signOut();
       info('Logged out successfully');
       router.push('/login');
       router.refresh();

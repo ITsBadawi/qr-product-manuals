@@ -43,7 +43,8 @@ graph TD
 - **Framework**: [Next.js](https://nextjs.org/) (App Router, Turbopack, React 19)
 - **Language**: [TypeScript](https://www.typescriptlang.org/) (Strict Mode)
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/) (Modern Dark UI + `@media print` layout)
-- **Database**: [Neon](https://neon.tech/) Serverless PostgreSQL (with JSON file fallback for offline/local development)
+- **Database**: [Neon](https://neon.tech/) Serverless PostgreSQL
+- **Authentication**: [Neon Auth](https://neon.com/docs/auth/overview) (Managed Better Auth for Next.js App Router)
 - **Storage**: [Cloudflare R2](https://www.cloudflare.com/developer-platform/r2/) (S3-compatible Object Storage via `@aws-sdk/client-s3`)
 - **QR Code Engine**: `qrcode` (Crisp vector SVG & 1024x1024 high-res raster PNG)
 - **Icons**: [Lucide React](https://lucide.dev/)
@@ -57,9 +58,9 @@ graph TD
 qr-project/
 ├── app/
 │   ├── (auth)/
-│   │   └── login/page.tsx               # Admin login portal
+│   │   └── login/page.tsx               # Neon Auth sign in & account creation
 │   ├── (dashboard)/
-│   │   ├── layout.tsx                   # Auth guard, responsive sidebar, navigation
+│   │   ├── layout.tsx                   # Neon Auth session guard & layout
 │   │   ├── dashboard/page.tsx           # Metrics (products, storage, active QR counts)
 │   │   └── dashboard/products/
 │   │       ├── page.tsx                 # Searchable, filterable product table & actions
@@ -68,7 +69,7 @@ qr-project/
 │   ├── p/
 │   │   └── [id]/page.tsx                # PUBLIC QR Target: Mobile-first manual viewer
 │   ├── api/
-│   │   ├── auth/login/route.ts          # Cookie-based secure admin authentication
+│   │   ├── auth/[...path]/route.ts      # Neon Auth Next.js API handler proxy
 │   │   └── products/
 │   │       ├── route.ts                 # List products & create product with PDF upload
 │   │       └── [id]/
@@ -86,6 +87,9 @@ qr-project/
 ├── db/
 │   └── schema.sql                       # PostgreSQL / Neon schema (tables, indexes, triggers)
 ├── lib/
+│   ├── auth/
+│   │   ├── server.ts                    # Neon Auth server singleton (handlers & sessions)
+│   │   └── client.ts                    # Neon Auth browser client (signIn, signUp, signOut)
 │   ├── db/
 │   │   └── index.ts                     # Database access layer (Neon with fallback)
 │   ├── storage/
@@ -96,7 +100,7 @@ qr-project/
 │       ├── qr.ts                        # SVG & High-res PNG QR code generator utilities
 │       ├── format.ts                    # File size, date, and string helpers
 │       └── cn.ts                        # Tailwind class merger
-├── middleware.ts                        # Next.js middleware for route protection
+├── middleware.ts                        # Next.js Neon Auth middleware for route protection
 ├── .env.example                         # Documented environment variables
 └── README.md
 ```
@@ -108,7 +112,7 @@ qr-project/
 ### 1. Prerequisites
 - Node.js 20+
 - Cloudflare R2 Bucket & API Credentials
-- Neon PostgreSQL Database (optional; falls back to local storage if `DATABASE_URL` is omitted)
+- Neon PostgreSQL Database with Neon Auth enabled
 
 ### 2. Clone and Install Dependencies
 ```bash
@@ -134,15 +138,15 @@ CLOUDFLARE_R2_BUCKET_NAME=qr-pdf
 # Permanent QR Code Base Application URL
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 
-# Admin Portal Credentials
-ADMIN_EMAIL=admin@warehouse.com
-ADMIN_PASSWORD=admin123456
-
-# Neon PostgreSQL Database (Optional - fallback to local storage if omitted)
+# Neon PostgreSQL Database
 DATABASE_URL="postgresql://user:password@endpoint.neon.tech/neondb?sslmode=require"
+
+# Neon Auth (Managed Better Auth)
+NEON_AUTH_BASE_URL=https://ep-xxx.neonauth.us-east-1.aws.neon.tech/neondb/auth
+NEON_AUTH_COOKIE_SECRET=your-secure-secret-at-least-32-chars
 ```
 
-### 4. Database Setup (Optional if using Neon)
+### 4. Database Setup
 Open your **Neon Console** -> **SQL Editor**, open [`db/schema.sql`](db/schema.sql), and execute it. This will create:
 - `products` table
 - Indexing on `id`, `sku`, `is_active`, and `created_at`

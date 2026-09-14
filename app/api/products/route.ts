@@ -3,6 +3,7 @@ import { getProducts, createProduct } from '@/lib/db';
 import { uploadPdfToR2 } from '@/lib/storage/r2';
 import { sanitizeFileName } from '@/lib/utils/format';
 import { validateProductData, validatePdfFile } from '@/lib/validations/product';
+import { auth } from '@/lib/auth/server';
 
 export async function GET() {
   try {
@@ -43,10 +44,14 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(arrayBuffer);
     await uploadPdfToR2(r2Key, buffer, 'application/pdf');
 
+    // Get current user from Neon Auth
+    const { data: session } = await auth.getSession();
+    const userId = session?.user?.id || 'owner';
+
     // Save to database
     const newProduct = await createProduct({
       id: productId,
-      user_id: 'owner',
+      user_id: userId,
       name: name.trim(),
       sku: sku ? sku.trim() : null,
       description: description ? description.trim() : null,

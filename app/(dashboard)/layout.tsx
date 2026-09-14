@@ -1,21 +1,22 @@
 import { redirect } from 'next/navigation';
-import { cookies } from 'next/headers';
+import { auth } from '@/lib/auth/server';
 import { DashboardLayoutClient } from '@/components/dashboard/DashboardLayoutClient';
+
+export const dynamic = 'force-dynamic';
 
 export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const cookieStore = await cookies();
-  const adminSession = cookieStore.get('admin_session')?.value;
+  const { data: session } = await auth.getSession();
 
-  if (!adminSession) {
+  if (!session?.user) {
     redirect('/login');
   }
 
   return (
-    <DashboardLayoutClient userEmail={adminSession}>
+    <DashboardLayoutClient userEmail={session.user.email || session.user.name || 'User'}>
       {children}
     </DashboardLayoutClient>
   );
