@@ -1,0 +1,15 @@
+[
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440001",
+    "user_id": "owner",
+    "name": "Industrial Generator G500",
+    "sku": "GEN-500-DIESEL",
+    "description": "Heavy duty commercial 500kW backup power generator.",
+    "pdf_path": "manuals/550e8400-e29b-41d4-a716-446655440001/sample-manual.pdf",
+    "pdf_original_name": "G500-User-Manual.pdf",
+    "pdf_size": 285,
+    "is_active": true,
+    "created_at": "2026-09-14T19:00:19.454Z",
+    "updated_at": "2026-09-14T19:00:19.454Z"
+  }
+]
